@@ -43,7 +43,6 @@ test_verify_one_file! {
         use vstd::prelude::*;
         fn test()
         {
-            broadcast use vstd::std_specs::hash::group_hash_axioms;
             let mut m = HashMap::<u32, i8>::new();
             assert(m@ == Map::<u32, i8>::empty());
 
@@ -81,7 +80,6 @@ test_verify_one_file! {
         use vstd::prelude::*;
         fn test()
         {
-            broadcast use vstd::std_specs::hash::group_hash_axioms;
             let mut m = HashSet::<u32>::new();
             assert(m@ == Set::<u32>::empty());
 
@@ -125,7 +123,6 @@ test_verify_one_file! {
 
         fn test()
         {
-            broadcast use vstd::std_specs::hash::group_hash_axioms;
             let mut m = HashMap::<Box<u32>, i8>::new();
             assert(m@ == Map::<Box<u32>, i8>::empty());
 
@@ -161,7 +158,6 @@ test_verify_one_file! {
 
         fn test()
         {
-            broadcast use vstd::std_specs::hash::group_hash_axioms;
             let mut m = HashSet::<Box<u32>>::new();
             assert(m@ == Set::<Box<u32>>::empty());
 
@@ -226,7 +222,6 @@ test_verify_one_file! {
 
         fn test()
         {
-            broadcast use vstd::std_specs::hash::group_hash_axioms;
             assume(vstd::std_specs::hash::obeys_key_model::<MyStruct>());
 
             let mut m = HashMap::<MyStruct, u32>::new();
@@ -282,7 +277,6 @@ test_verify_one_file! {
 
         fn test()
         {
-            broadcast use vstd::std_specs::hash::group_hash_axioms;
             assume(vstd::std_specs::hash::obeys_key_model::<MyStruct>());
 
             let mut m = HashSet::<MyStruct>::new();
@@ -348,7 +342,6 @@ test_verify_one_file! {
 
         fn test()
         {
-            broadcast use vstd::std_specs::hash::group_hash_axioms;
             // Missing `assume(vstd::std_specs::hash::obeys_key_model::<MyStruct>());`
 
             let mut m = HashMap::<MyStruct, u32>::new();
@@ -388,7 +381,6 @@ test_verify_one_file! {
 
         fn test()
         {
-            broadcast use vstd::std_specs::hash::group_hash_axioms;
             // Missing `assume(vstd::std_specs::hash::obeys_key_model::<MyStruct>());`
 
             let mut m = HashSet::<MyStruct>::new();
@@ -767,7 +759,6 @@ test_verify_one_file! {
         use vstd::std_specs::hash::*;
         fn test()
         {
-            broadcast use vstd::std_specs::hash::group_hash_axioms;
             let mut m = HashMap::<u32, i8>::new();
             assert(m@ == Map::<u32, i8>::empty());
 
@@ -799,6 +790,38 @@ test_verify_one_file! {
 }
 
 test_verify_one_file! {
+    #[test] test_hash_map_keys_inline verus_code! {
+        use std::collections::HashMap;
+        use std::collections::hash_map::Keys;
+        use vstd::prelude::*;
+        use vstd::std_specs::hash::*;
+        fn test()
+        {
+            let mut m = HashMap::<u32, i8>::new();
+            assert(m@ == Map::<u32, i8>::empty());
+
+            m.insert(3, 4);
+            m.insert(6, -8);
+            assert(m@.dom() =~= set![3u32, 6u32]);
+
+            let mut items = Vec::<u32>::new();
+
+            for k in iter: m.keys()
+                invariant
+                    iter.keys.to_set() =~= set![3u32, 6u32],
+                    iter.keys.no_duplicates(),
+                    items@ == iter@,
+            {
+                assert(iter.keys.take(iter.pos).push(*k) =~= iter.keys.take(iter.pos + 1));
+                items.push(*k);
+            }
+            assert(items@.to_set() =~= set![3u32, 6u32]);
+            assert(items@.no_duplicates());
+        }
+    } => Ok(())
+}
+
+test_verify_one_file! {
     #[test] test_hash_set_iter verus_code! {
         use std::collections::HashSet;
         use std::collections::hash_set::Iter;
@@ -806,7 +829,6 @@ test_verify_one_file! {
         use vstd::std_specs::hash::*;
         fn test()
         {
-            broadcast use vstd::std_specs::hash::group_hash_axioms;
             let mut m = HashSet::<u32>::new();
             assert(m@ == Set::<u32>::empty());
 

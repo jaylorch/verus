@@ -604,16 +604,40 @@ pub assume_specification<Key, Value, S>[ HashMap::<Key, Value, S>::clear ](
         m@ == Map::<Key, Value>::empty(),
 ;
 
+pub open spec fn iter_reflects_hashmap<'a, Key, Value, S>(
+    iter: Keys<'a, Key, Value>,
+    m: &'a HashMap<Key, Value, S>
+) -> bool
+{
+    obeys_key_model::<Key>() && builds_valid_hashers::<S>() ==> {
+        let (index, s) = iter@;
+        &&& index == 0
+        &&& s.to_set() == m@.dom()
+        &&& s.no_duplicates()
+    }
+}
+
+// To allow reasoning about the ghost iterator when the executable
+// function `keys()` is invoked in a `for` loop header (e.g., in
+// `for k in it: m.keys() { ... }`), we need to specify the behavior of
+// the iterator in spec mode. To do that, we add
+// `#[verifier::when_used_as_spec(spec_keys)` to the specification for
+// the executable `keys` method and define that spec function here.
+pub open spec fn spec_keys<'a, Key, Value, S>(m: &'a HashMap<Key, Value, S>) -> (keys: Keys<'a, Key, Value>);
+
+pub broadcast proof fn axiom_spec_keys<'a, Key, Value, S>(m: &'a HashMap<Key, Value, S>)
+    ensures
+        iter_reflects_hashmap(#[trigger] spec_keys(m), m),
+{
+    admit();
+}
+
+#[verifier::when_used_as_spec(spec_keys)]
 pub assume_specification<'a, Key, Value, S>[ HashMap::<Key, Value, S>::keys ](
     m: &'a HashMap<Key, Value, S>,
 ) -> (keys: Keys<'a, Key, Value>)
     ensures
-        obeys_key_model::<Key>() && builds_valid_hashers::<S>() ==> {
-            let (index, s) = keys@;
-            &&& index == 0
-            &&& s.to_set() == m@.dom()
-            &&& s.no_duplicates()
-        },
+        iter_reflects_hashmap(keys, m),
 ;
 
 // The `iter` method of a `HashSet` returns an iterator of type `Iter`,
@@ -917,6 +941,35 @@ pub assume_specification<Key, S>[ HashSet::<Key, S>::clear ](m: &mut HashSet<Key
         m@ == Set::<Key>::empty(),
 ;
 
+pub open spec fn iter_reflects_hashset<'a, Key, S>(
+    iter: Iter<'a, Key>,
+    m: &'a HashSet<Key, S>
+) -> bool
+{
+    obeys_key_model::<Key>() && builds_valid_hashers::<S>() ==> {
+        let (index, s) = iter@;
+        &&& index == 0
+        &&& s.to_set() == m@
+        &&& s.no_duplicates()
+    }
+}
+
+// To allow reasoning about the ghost iterator when the executable
+// function `iter()` is invoked in a `for` loop header (e.g., in
+// `for k in it: s.iter() { ... }`), we need to specify the behavior of
+// the iterator in spec mode. To do that, we add
+// `#[verifier::when_used_as_spec(spec_iter)` to the specification for
+// the executable `iter` method and define that spec function here.
+pub open spec fn spec_iter<'a, Key, S>(m: &'a HashSet<Key, S>) -> (iter: Iter<'a, Key>);
+
+pub broadcast proof fn axiom_spec_iter<'a, Key, S>(m: &'a HashSet<Key, S>)
+    ensures
+        iter_reflects_hashset(#[trigger] spec_iter(m), m),
+{
+    admit();
+}
+
+#[verifier::when_used_as_spec(spec_iter)]
 pub assume_specification<'a, Key, S>[ HashSet::<Key, S>::iter ](m: &'a HashSet<Key, S>) -> (r: Iter<
     'a,
     Key,
@@ -960,7 +1013,9 @@ pub broadcast group group_hash_axioms {
     axiom_set_deref_key_removed,
     axiom_set_deref_key_to_value,
     axiom_set_box_key_to_value,
+    axiom_spec_keys,
     axiom_spec_hash_set_len,
+    axiom_spec_iter,
 }
 
 } // verus!
