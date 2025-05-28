@@ -33,9 +33,9 @@ since no expressions matching `is_even(i)` are around:
 
 The proofs above try to prove that an `exists` expression is true.
 Suppose, though, that we already know that an `exists` expression is true,
-perhaps because we assume it as a function precondition.
+perhaps because we have it as a function precondition.
 This means that some witness to the `exists` expression must exist.
-If we want to get the witness, we can use a `choose` expression.
+If we want to get one such witness, we can use a `choose` expression.
 
 A `choose` expression `choose|i: int| f(i)` implements
 the Hilbert choice operator
@@ -43,7 +43,7 @@ the Hilbert choice operator
 it chooses some value `i` that satisfies `f(i)` if such a value exists.
 Otherwise, it picks an arbitrary value for `i`.
 
-The following example assumes `exists|i: int| f(i)` as a precondition.
+The following example has `exists|i: int| f(i)` as a precondition.
 Based on this, the SMT solver knows that there is at least one witness `i`
 that makes `f(i)` true,
 and `choose` picks one of these witnesses arbitrarily:

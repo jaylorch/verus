@@ -1,7 +1,7 @@
 # Closures
 
 In the previous chapter, we saw how to pass functions as values, which we did by referencing
-function items by name. However, it is more common in Rust to creating functions
+function items by name. However, it is more common in Rust to create functions
 using _closures_.
 
 ## Preconditions and postconditions on a closure

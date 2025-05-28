@@ -86,7 +86,7 @@ for proving `forall` expressions:
 
 Inside the body of the `assert ... by`,
 the variables of the `forall` are in scope
-and the left-hand side of the `==>` is assumed.
+and the left-hand side of the `implies` is assumed.
 This allows the body to call `lemma_even_f(i)`.
 
 ## Using exists with choose
